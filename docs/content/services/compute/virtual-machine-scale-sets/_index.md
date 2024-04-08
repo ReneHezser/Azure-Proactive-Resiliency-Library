@@ -22,8 +22,8 @@ The presented resiliency recommendations in this guidance include Virtual Machin
 | [VMSS-6 - Disable Force strictly even balance across zones to avoid scale in and out fail attempts](#vmss-6---disable-force-strictly-even-balance-across-zones-to-avoid-scale-in-and-out-fail-attempts) | Availability | High | Verified | Yes |
 | [VMSS-7 - Configure Allocation Policy Spreading algorithm to Max Spreading](#vmss-7---configure-allocation-policy-spreading-algorithm-to-max-spreading) | System Efficiency | Medium | Preview | Yes |
 | [VMSS-8 - Deploy VMSS across availability zones with VMSS Flex](#vmss-8---deploy-vmss-across-availability-zones-with-vmss-flex) | Availability | High | Verified | Yes |
-| [VMSS-9 - Set Patch orchestration options to Azure-orchestrated](#vmss-9---set-patch-orchestration-options-to-azure-orchestrated) | Automation | Low | Preview | Yes |
-| [VMSS-10 - Upgrade VMSS Image versions scheduled to be deprecated or already retired](#vmss-10---upgrade-vmss-image-versions-scheduled-to-be-deprecated-or-already-retired) | Governance | High | Preview | Yes |
+| [VMSS-9 - Set Patch orchestration options to Azure-orchestrated](#vmss-9---set-patch-orchestration-options-to-azure-orchestrated) | Automation | Low | Verified | Yes |
+| [VMSS-10 - Upgrade VMSS Image versions scheduled to be deprecated or already retired](#vmss-10---upgrade-vmss-image-versions-scheduled-to-be-deprecated-or-already-retired) | Governance | High | Verified | No |
 | [VMSS-11 - Production VMSS instances should be using SSD disks](#vmss-11---production-vmss-instances-should-be-using-ssd-disks) | System Efficiency | High | Verified | Yes |
 
 {{< /table >}}
@@ -254,6 +254,7 @@ Enabling automatic VM guest patching for your Azure VMs helps ease update manage
 **Resources**
 
 - [Automatic VM Guest Patching for Azure VMs](https://learn.microsoft.com/azure/virtual-machines/automatic-vm-guest-patching)
+- [Auto OS Image Upgrades](https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-automatic-upgrade)
 
 **Resource Graph Query**
 
@@ -273,7 +274,7 @@ Enabling automatic VM guest patching for your Azure VMs helps ease update manage
 
 **Guidance**
 
-Ensure current versions of images are in use to avoid disruption after image deprecation. This ensures that if these images are deprecated that you will not be impacted as you will no longer be able to deploy any additional VMs or VMSS once the image has been deprecated.
+Ensure the publisher continues to support the OS image avoid disruption or security gaps. Please review the publisher, offer, and sku information of the VM to ensure you are running on a supported image. Please enable automatic guest patching or automatic OS image upgrades to get notifications about image deprecation.
 
 **Resources**
 

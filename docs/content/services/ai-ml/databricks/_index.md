@@ -41,6 +41,8 @@ The presented resiliency recommendations in this guidance include Azure Databric
 | [DBW-26 - Isolate each workspace in its own Vnet](#dbw-26---isolate-each-workspace-in-its-own-vnet)                                                                                                                           |   System Efficiency    |  High  | Preview  |         No          |
 | [DBW-27 - Do not Store any Production Data in Default DBFS Folders](#dbw-27---do-not-store-any-production-data-in-default-dbfs-folders)                                                                                       |      Availability      |  High  | Preview  |         No          |
 | [DBW-28 - Do not use Azure Sport VMs for critical Production workloads](#dbw-28---do-not-use-azure-sport-vms-for-critical-production-workloads)                                                                               |      Availability      |  High  | Preview  |         No          |
+| [DBW-29 - Migrate Legacy Workspaces](#dbw-29---migrate-legacy-workspaces)                                                                               |      Availability      |  High  | Preview  |         No          |
+| [DBW-30 - Define alternate VM SKUs](#dbw-30---define-alternate-vm-skus)                                                                               |      System Efficiency      |  Medium  | Preview  |         No          |
 {{< /table >}}
 
 {{< alert style="info" >}}
@@ -761,6 +763,74 @@ Azure Spot VMs are not recommended for critical production workloads that requir
 {{< collapse title="Show/Hide Query/Script" >}}
 
 {{< code lang="sql" file="code/dbw-28/dbw-28.kql" >}} {{< /code >}}
+
+{{< /collapse >}}
+
+<br><br>
+
+### DBW-29 - Migrate Legacy Workspaces
+
+**Category: Availability**
+
+**Impact: High**
+
+**Guidance**
+
+Azure Databricks initially launched with shared control plane, where some regions shared control plane resources with another region. This shared control plane model then evolved to dedicated in-region control planes (e.g. North Europe, Central US, East US) to ensure a regional outage does not impact customer workspaces in other regions.
+
+Regions that now have their dedicated control plane have workspaces running in two configurations:
+
+- Legacy Workspaces - these are workspaces created before the dedicated control plane was available.
+- Workspaces - these are workspaces created after the dedicated control plane was available.
+
+The path for migrating legacy workspaces to use the in-region control plane is to **redeploy**.
+
+Review the list of network addresses used in each region in the Microsoft documentation and determine which regions are sharing a control plane. For example, we can look up Canada East in the table and see that the address for its SCC relay is "tunnel.canadacentral.azuredatabricks.net". Since the relay address is in Canada Central, we know that "Canada East" is using the control plane in another region.
+
+Some regions list two different addresses in the Azure Databricks Control plane networking table. For example, North Europe lists both "tunnel.westeurope.azuredatabricks.net" and "tunnel.northeuropec2.azuredatabricks.net" for the SCC relay address. This is because North Europe once shared the West Europe control plane, but it now has its own independent control plane. There are still some old, legacy workspaces in North Europe tied to the old control plane, but all workspaces created since the switch-over will be using the new control plane.
+
+Once a new Azure Databricks workspace is created, it should be configured to match the original legacy workspace.  Databricks, Inc.
+recommends that customers use the Databricks Terraform Exporter for both the initial copy and for maintaining the workspace. However, this exporter is still in the experimental phase. For customers that do not trust experimental projects or for customers that do not want to use Terraform, they can use the "Migrate" tool that Databricks, Inc. maintains with GitHub. This is a collection of scripts that will export all of the objects (notebooks, cluster definitions, metadata, *etc.*) from one workspace and then import them to another workspace.  Customers can use the "Migrate" tool to initially populate the new
+workspace and then use their CI/CD deployment process to keep the workspace in sync.
+
+Pro Tip: If you need to determine where the control plane is located for a particular Databricks workspace, you can use the "nslookup" console command on Windows or Linux with the workspace address.  The result will tell you where the control plane is located.
+
+**Resources**
+
+- [Azure Databricks regions - IP addresses and domains](https://learn.microsoft.com/azure/databricks/resources/supported-regions#--ip-addresses-and-domains)
+- [Migrate - maintained by Databricks Inc.](https://github.com/databrickslabs/migrate)
+- [Databricks Terraform Exporter - maintained by Databricks Inc. (Experimental)](https://registry.terraform.io/providers/databricks/databricks/latest/docs/guides/experimental-exporter)
+
+<br><br>
+
+### DBW-30 - Define alternate VM SKUs
+
+**Category: System Efficiency**
+
+**Impact: Medium**
+
+**Guidance**
+
+Azure Databricks availability planning should include plans for swapping VM SKUs based on capacity constraints.
+
+Azure Databricks creates its VMs as regional VMs and depends on Azure to choose the best availability zone for the VM.  In the past, there have been rare instances where compute can not be allocated due to zonal or regional VM constraints.  Thus, resulting in a "CLOUD PROVIDER" error.
+
+In these situations, customers have two options:
+
+- Use Databricks Pools.  To manage costs, customers should be careful when selecting the size of their pools. They will have to pay for the Azure VMs even when they are idle in the pool.  Databricks pool can contain only one SKU of VMs; you cannot mix multiple SKUs in the same pool. To reduce the number of pools that customers need to manage, they should settle on a few SKUs that will service their jobs instead of using a different VM
+SKU for each job.
+- Plan for alternative SKUs in their preferred region(s).
+
+**Resources**
+
+- [Compute configuration best practices](https://learn.microsoft.com/azure/databricks/compute/cluster-config-best-practices)
+- [GPU-enabled compute](https://learn.microsoft.com/azure/databricks/compute/gpu)
+
+**Resource Graph Query**
+
+{{< collapse title="Show/Hide Query/Script" >}}
+
+{{< code lang="sql" file="code/dbw-30/dbw-30.kql" >}} {{< /code >}}
 
 {{< /collapse >}}
 

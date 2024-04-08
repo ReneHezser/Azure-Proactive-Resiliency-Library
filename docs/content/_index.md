@@ -4,6 +4,20 @@ description = "Welcome to the home of the Azure Proactive Resiliency Library (AP
 weight = 1
 +++
 
+{{< alert style="danger" >}}
+
+## WEBSITE MAINTENANCE NOTICE
+
+The APRL repository is scheduled to be migrated to a new repository the week of April 8th.
+The current APRL repository will be placed in READ-ONLY mode from April 8th to April 12th.
+No new pull requests will be accepted after April 5th.
+
+### New Repository: [https://github.com/Azure/Azure-Proactive-Resiliency-Library-v2](https://github.com/Azure/Azure-Proactive-Resiliency-Library-v2)
+
+### [aka.ms/aprl](https://aka.ms/aprl) will redirect to the new website starting April 15th
+
+{{< /alert >}}
+
 Welcome to the home of the Azure Proactive Resiliency Library (APRL).
 
 <img src="/Azure-Proactive-Resiliency-Library/media/img/aprl-white.png" width=40%>
@@ -29,10 +43,10 @@ In APRL you will see a number of terms used, like Preview & Verified. The below 
 
 {{< table style="table-striped" >}}
 
-| Term | Definition |
-| ---- | ---------- |
-| Preview Guidance | Guidance that Microsoft FTEs have created based on customer engagements and is in the process of reviewing with the relevant Azure Product Group Engineering Service owners to ensure the content is valid and accurate |
-| Verified Guidance | Guidance has been signed off by Azure Product Group Engineering Service owners following their review |
+| Term              | Definition                                                                                                                                                                                                              |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Preview Guidance  | Guidance that Microsoft FTEs have created based on customer engagements and is in the process of reviewing with the relevant Azure Product Group Engineering Service owners to ensure the content is valid and accurate |
+| Verified Guidance | Guidance has been signed off by Azure Product Group Engineering Service owners following their review                                                                                                                   |
 
 {{< /table >}}
 

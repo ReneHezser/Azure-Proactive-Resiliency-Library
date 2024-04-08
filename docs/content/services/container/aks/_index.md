@@ -21,13 +21,13 @@ The presented resiliency recommendations in this guidance include Aks and associ
 | [AKS-5 - Enable the cluster auto-scaler on an existing cluster](#aks-5---enable-the-cluster-auto-scaler-on-an-existing-cluster)                                                                                             | System Efficiency |  High   | Preview |         Yes         |
 | [AKS-6 - Back up Azure Kubernetes Service](#aks-6---back-up-azure-kubernetes-service)                                                                                                                                       | Disaster Recovery |   Low   | Preview |         No          |
 | [AKS-7 - Plan an AKS version upgrade](#aks-7---plan-an-aks-version-upgrade)                                                                                                                                                 |    Compliance     |  High   | Preview |         No          |
-| [AKS-8 - Ensure that Persistent Volumes in storage account are redundant for Pods with stateful applications](#aks-8---ensure-that-persistent-volumes-in-storage-account-are-redundant-for-pods-with-stateful-applications) |   Availability    |   Low   | Preview |         No          |
-| [AKS-9 - Upgrade Persistent Volumes with deprecated version to Azure CSI drivers](#aks-9---upgrade-persistent-volumes-with-deprecated-version-to-azure-csi-drivers)                                                         |   Storage  | High   | Preview |   No    |
+| [AKS-8 - Use zone-redundant storage for persistent volumes when running multi-zone AKS](#aks-8---use-zone-redundant-storage-for-persistent-volumes-when-running-multi-zone-aks) |   Availability    |   Low   | Verified |         No          |
+| [AKS-9 - Upgrade Persistent Volumes using in-tree drivers to Azure CSI drivers](#aks-9---upgrade-persistent-volumes-using-in-tree-drivers-to-azure-csi-drivers)                                                         |   Storage  | High   | Verified |   No    |
 | [AKS-10 - Implement Resource Quota to ensure that Kubernetes resources do not exceed hard resource limits.](#aks-10---implement-resource-quota-to-ensure-that-kubernetes-resources-do-not-exceed-hard-resource-limits)      | System Efficiency |   Low   | Preview |         No          |
 | [AKS-11 - Attach Virtual Nodes (ACI) to the AKS cluster](#aks-11---attach-virtual-nodes-aci-to-the-aks-cluster)                                                                                                             | System Efficiency |   Low   | Preview |         No          |
 | [AKS-12 - Update AKS tier to Standard](#aks-12---update-aks-tier-to-standard)                                                                                                                                               |   Availability   |  High   | Preview |         Yes         |
 | [AKS-13 - Enable AKS Monitoring](#aks-13---enable-aks-monitoring)                                                                                                                                                           |    Monitoring     |  High   | Preview |         Yes         |
-| [AKS-14 - Use Ephemeral Disks on AKS clusters](#aks-14---use-ephemeral-disks-on-aks-clusters)                                                                                                                               | System Efficiency | Medium  | Preview |         No          |
+| [AKS-14 - Use Ephemeral OS disks on AKS clusters](#aks-14---use-ephemeral-os-disks-on-aks-clusters)                                                                                                                               | System Efficiency | Medium  | Verified |         No          |
 | [AKS-15 - Enable and remediate Azure Policies configured for AKS](#aks-15---enable-and-remediate-azure-policies-configured-for-aks)                                                                                         |    Governance     |   Low   | Preview |         No          |
 | [AKS-16 - Enable GitOps when using DevOps frameworks](#aks-16---enable-gitops-when-using-devops-frameworks)                                                                                                                 |    Automation     |   Low   | Preview |         Yes         |
 | [AKS-17 - Configure affinity or anti-affinity rules based on application requirements](#aks-17---configure-affinity-or-anti-affinity-rules-based-on-application-requirements)                                               |   Availability    |  High   | Preview |         No          |
@@ -36,7 +36,7 @@ The presented resiliency recommendations in this guidance include Aks and associ
 | [AKS-20 - Configure system nodepool count](#aks-20---configure-system-nodepool-count)                                         |   Availability    |  High   | Preview |         Yes          |
 | [AKS-21 - Configure user nodepool count](#aks-21---configure-user-nodepool-count)                                         |   Availability    |  High   | Preview |         Yes          |
 | [AKS-22 - Configure pod disruption budgets (PDBs)](#aks-22---configure-pod-disruption-budgets-pdbs)                                         |   Availability    |  Medium   | Preview |         No          |
-| [AKS-23 - Nodepool subnet size needs to accommodate maximum auto-scale settings](#aks-23---nodepool-subnet-size-needs-to-accommodate-maximum-auto-scale-settings)                                         |   Availability    |  High   | Preview |         No          |
+| [AKS-23 - Nodepool subnet size needs to accommodate maximum auto-scale settings](#aks-23---nodepool-subnet-size-needs-to-accommodate-maximum-auto-scale-settings)                                         |   Availability    |  High   | Preview |         Yes          |
 | [AKS-24 - Enforce resource quotas at the namespace level](#aks-24---enforce-resource-quotas-at-the-namespace-level)                                         |   Availability    |  High   | Preview |         No          |
 
 {{< /table >}}
@@ -238,7 +238,7 @@ If you're running an unsupported Kubernetes version, you'll be asked to upgrade 
 
 <br><br>
 
-### AKS-8 - Ensure that Persistent Volumes in storage account are redundant for Pods with stateful applications
+### AKS-8 - Use zone-redundant storage for persistent volumes when running multi-zone AKS
 
 **Category: Availability**
 
@@ -246,17 +246,23 @@ If you're running an unsupported Kubernetes version, you'll be asked to upgrade 
 
 **Guidance**
 
-Data in an Azure Storage account is always replicated three times in the primary region. Azure Storage for Persistent Volumes offers other options for how your data is replicated in the primary or paired region:
+For applications that need replication of data across availability zones to protect against zonal outages, customers should leverage zone-redundant storage (ZRS) with multi-zone AKS clusters. ZRS replicates data synchronously across three Azure availability zones in the primary region.
 
-- LRS synchronously replicates data 3 times in single physical location. It is least expensive replication but not recommended for apps with high availability and durability. LRS provides eleven 9 durability.
-- ZRS copies data synchronously across 3 availability zone in primary region. ZRS is recommended for apps requiring high availability across zones. ZRS provides twelve 9s durability.
-
-In AKS Premium_ZRS and StandardSSD_ZRS disk types are supported. ZRS disk could be scheduled on the zone or non-zone node, without the restriction that disk volume should be co-located in the same zone as a given node.
+- Azure Disks: Use ZRS disks by setting the disk SKU to StandardSSD_ZRS or Premium_ZRS in a storage class. Also, starting from AKS v1.29 onward, multi-zone AKS clusters will have default storage classes that use ZRS disks.
+- Azure Container Storage: Customers can leverage ZRS disks in Azure Container Storage by creating a storage pool and specifying StandardSSD_ZRS or Premium_ZRS as the SKU. Customers can also create a multi-zone storage pool where the total storage capacity will be distributed across zones.
+- Azure Files: Use ZRS files by setting the SKU to Standard_ZRS or Premium_ZRS in a storage class.
+- Azure Blob: Use ZRS blob by setting the SKU to Standard_ZRS or Premium_ZRS in a storage class.
 
 **Resources**
 
-- [Azure Disk CSI Driver](https://learn.microsoft.com/azure/aks/azure-disk-csi#azure-disk-csi-driver-features)
-- [Virtual Machine Disk Redundancy](https://learn.microsoft.com/azure/virtual-machines/disks-redundancy)
+- [Availability zones overview](https://learn.microsoft.com/azure/reliability/availability-zones-overview?tabs=azure-cli)
+- [Zone-redundant storage](https://learn.microsoft.com/azure/storage/common/storage-redundancy#zone-redundant-storage)
+- [ZRS disks](https://learn.microsoft.com/azure/virtual-machines/disks-redundancy#zone-redundant-storage-for-managed-disks)
+- [Convert a disk from LRS to ZRS](https://learn.microsoft.com/azure/virtual-machines/disks-migrate-lrs-zrs)
+- [Enable multi-zone storage redundancy in Azure Container Storage](https://learn.microsoft.com/azure/storage/container-storage/enable-multi-zone-redundancy)
+- [ZRS files](https://learn.microsoft.com/azure/storage/files/files-redundancy#zone-redundant-storage)
+- [Change the redundancy configuration for a storage account](https://learn.microsoft.com/azure/storage/common/redundancy-migration)
+
 
 **Resource Graph Query**
 
@@ -268,7 +274,7 @@ In AKS Premium_ZRS and StandardSSD_ZRS disk types are supported. ZRS disk could 
 
 <br><br>
 
-### AKS-9 - Upgrade Persistent Volumes with deprecated version to Azure CSI drivers
+### AKS-9 - Upgrade Persistent Volumes using in-tree drivers to Azure CSI drivers
 
 **Category: Storage**
 
@@ -276,11 +282,11 @@ In AKS Premium_ZRS and StandardSSD_ZRS disk types are supported. ZRS disk could 
 
 **Guidance**
 
-Starting with Kubernetes version 1.26, in-tree persistent volume types kubernetes.io/azure-disk and kubernetes.io/azure-file are deprecated and will no longer be supported. Removing these drivers following their deprecation is not planned, however you should migrate to the corresponding CSI drivers disks.csi.azure.com and file.csi.azure.com.
+From Kubernetes version 1.26 onward, Azure Disk and Azure File in-tree drivers are no longer supported (persistent volume types with the provisioners kubernetes.io/azure-disk and kubernetes.io/azure-file), due to the deprecation of in-tree storage drivers by the Kubernetes Community. Azure Storage is now provided by the Azure Disk and File CSI drivers. While existing deployments using the in-tree drivers are not expected to break, these are no longer tested and customers should update them to use the CSI drivers. Also, to leverage new storage capabilities (new SKUs, features, etc.), customers should be using the CSI drivers.
 
 **Resources**
 
-- [CSI Storage Drivers](https://learn.microsoft.com/en-us/azure/aks/csi-storage-drivers)
+- [CSI Storage Drivers](https://learn.microsoft.com/azure/aks/csi-storage-drivers)
 - [CSI Migrate in Tree Volumes](https://learn.microsoft.com/azure/aks/csi-migrate-in-tree-volumes)
 
 **Resource Graph Query**
@@ -395,7 +401,7 @@ Azure Monitor collects events, captures container logs, collects CPU/Memory info
 
 <br><br>
 
-### AKS-14 - Use Ephemeral Disks on AKS clusters
+### AKS-14 - Use Ephemeral OS disks on AKS clusters
 
 **Category: System Efficiency**
 
@@ -403,11 +409,14 @@ Azure Monitor collects events, captures container logs, collects CPU/Memory info
 
 **Guidance**
 
-Ephemeral OS disks provide lower read/write latency on the OS disk of AKS agent nodes since the disk is locally attached, and it is not replicated as managed disks. You will also get faster cluster operations like scale or upgrade thanks to faster re-imaging and boot times.
+Ephemeral disks are ideal as OS disks for stateless applications since they provide better performance and improved reliability by decreasing IO incidents. Additionally, customers won’t incur additional storage costs for the OS, and they can get faster cluster operations like scale or upgrade thanks to faster re-imaging and boot times. AKS will default to using an ephemeral disk as the OS disk if it’s available for the VM SKU selected for node pools if customers don’t explicitly request an Azure managed disk for the OS.
 
 **Resources**
 
-- [AKS Ephemeral OS Disk](https://learn.microsoft.com/samples/azure-samples/aks-ephemeral-os-disk/aks-ephemeral-os-disk/)
+- [Ephemeral OS disk](https://learn.microsoft.com/azure/aks/concepts-storage#ephemeral-os-disk)
+- [Configure an AKS cluster](https://learn.microsoft.com/azure/aks/cluster-configuration)
+- [Everything you want to know about ephemeral OS disks and AKS](https://learn.microsoft.com/samples/azure-samples/aks-ephemeral-os-disk/aks-ephemeral-os-disk/)
+
 
 **Resource Graph Query**
 

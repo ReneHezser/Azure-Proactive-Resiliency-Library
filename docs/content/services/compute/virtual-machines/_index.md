@@ -19,7 +19,7 @@ The presented resiliency recommendations in this guidance include Virtual Machin
 | [VM-3 - Migrate VMs using availability sets to VMSS Flex](#vm-3---migrate-vms-using-availability-sets-to-vmss-flex) | Availability | High | Verified | Yes |
 | [VM-4 - Replicate VMs using Azure Site Recovery](#vm-4---replicate-vms-using-azure-site-recovery) | Disaster Recovery | Medium | Verified | Yes |
 | [VM-5 - Use Managed Disks for Virtual Machine disks](#vm-5---use-managed-disks-for-vm-disks) | Availability | High | Verified | Yes |
-| [VM-6 - Host application or database data on a data disk](#vm-6---host-application-or-database-data-on-a-data-disk) | System Efficiency | Low | Verified | Yes |
+| [VM-6 - Host database data on a data disk](#vm-6---host-database-data-on-a-data-disk) | System Efficiency | Low | Verified | Yes |
 | [VM-7 - Enable Backups on your VMs](#vm-7---backup-vms-with-azure-backup-service) | Disaster Recovery | Medium | Verified | Yes |
 | [VM-8 - Production VMs should be using SSD disks](#vm-8---production-vms-should-be-using-ssd-disks) | System Efficiency | High | Verified | Yes |
 | [VM-9 - There are VMs in Stopped state](#vm-9---review-vms-in-stopped-state) | Governance | Low | Verified | Yes |
@@ -32,13 +32,12 @@ The presented resiliency recommendations in this guidance include Virtual Machin
 | [VM-16 - Shared disks should only be enabled in Clustered servers](#vm-16---shared-disks-should-only-be-enabled-in-clustered-servers) | Storage | Medium | Verified | Yes |
 | [VM-17 - The Network access to the VM disk is set to Enable Public access from all networks](#vm-17---network-access-to-the-vm-disk-should-be-set-to-disable-public-access-and-enable-private-access) | Access & Security | Low | Verified | Yes |
 | [VM-18 - Virtual Machine is not compliant with Azure Policies](#vm-18---ensure-that-your-vms-are-compliant-with-azure-policies) | Governance | Low | Verified | Yes |
-| [VM-19 - Enable disk encryption, Enable data at rest encryption by default](#vm-19---enable-disk-encryption-and-data-at-rest-encryption-by-default) | Access & Security | Medium | Verified | Yes |
+| [VM-19 - Enable advanced encryption options for your managed disks](#vm-19---enable-advanced-encryption-options-for-your-managed-disks) | Access & Security | Medium | Verified | No |
 | [VM-20 - Enable Insights to get more visibility into the health and performance of your virtual machine](#vm-20---enable-vm-insights) | Monitoring | Low | Verified | Yes |
 | [VM-21 - Configure diagnostic settings for all Azure Virtual Machines](#vm-21---configure-diagnostic-settings-for-all-azure-virtual-machines) | Monitoring | Low | Preview | Yes |
-| [VM-22 - Use maintenance configurations for the Virtual Machine](#vm-22---use-maintenance-configurations-for-the-vms) | Governance | High | Preview | Yes |
-| [VM-23 - Avoid using A or B-Series VM Sku for production VMs that need the full performance of the CPU continuously](#vm-23---avoid-using-a-or-b-series-vm-sku-for-production-vms-that-need-the-full-performance-of-the-cpu-continuously) | System Efficiency | High | Preview | Yes |
-| [VM-24 - Mission Critical Workloads should be using Premium or Ultra Disks](#vm-24---mission-critical-workloads-should-be-using-premium-or-ultra-disks) | System Efficiency | High | Preview | Yes |
-| [VM-26 - Ensure all VMs part of a SQL Always-on cluster have the same specifications and configurations](#vm-26---ensure-all-vms-part-of-a-sql-always-on-cluster-have-the-same-specifications-and-configurations) | Application Resiliency | High | Preview | No |
+| [VM-22 - Use maintenance configurations for the Virtual Machine](#vm-22---use-maintenance-configurations-for-the-vms) | Governance | High | Verified | Yes |
+| [VM-23 - Avoid using A or B-Series VM Sku for production VMs that need the full performance of the CPU continuously](#vm-23---avoid-using-a-or-b-series-vm-sku-for-production-vms-that-need-the-full-performance-of-the-cpu-continuously) | System Efficiency | High | Verified | Yes |
+| [VM-24 - Mission Critical Workloads should be using Premium or Ultra Disks](#vm-24---mission-critical-workloads-should-be-using-premium-or-ultra-disks) | System Efficiency | High | Verified | Yes |
 | [VM-27 - Use Azure Boost VMs for Maintenance sensitive workload](#vm-27---use-azure-boost-vms-for-maintenance-sensitive-workload) | Availability | Medium | Preview | No |
 | [VM-28 - Enable Scheduled Events for Maintenance sensitive workload VMs](#vm-28---enable-scheduled-events-for-maintenance-sensitive-workload-vms) | Availability | Medium | Preview | No |
 
@@ -181,7 +180,7 @@ Azure unmanaged disks will be fully retired on September 30, 2025. If you use un
 
 <br><br>
 
-### VM-6 - Host application or database data on a data disk
+### VM-6 - Host database data on a data disk
 
 **Category: System Efficiency**
 
@@ -189,11 +188,13 @@ Azure unmanaged disks will be fully retired on September 30, 2025. If you use un
 
 **Guidance**
 
-A data disk is a managed disk that's attached to a virtual machine to store application data, or other data you need to keep. Data disks are registered as SCSI drives and are labeled with a letter that you choose. Hosting you data on a data disk also helps with flexibility when backuping or restoring data, as well as migrating the disk without having to migrate the entire Virtual Machine and Operating System. You will be able to also select a different disk sku, with different type, size, and performance that meet your requirements.
+Host database data on a data disk instead of OS disk.
+A data disk is a managed disk that is attached to a virtual machine to store data you need to keep. Data disks are registered as SCSI drives and are labeled with a letter that you choose. Hosting your data on a data disk helps with flexibility when backuping or restoring data, as well as migrating the disk without having to migrate the entire Virtual Machine and Operating System. You will be able to  select a different disk sku, with different type, size, and performance that meet your requirements.
 
 **Resources**
 
 - [Introduction to Azure managed disks - Data disks](https://learn.microsoft.com/azure/virtual-machines/managed-disks-overview#data-disk)
+- [Azure managed disk types](https://learn.microsoft.com/azure/virtual-machines/disks-types)
 
 **Resource Graph Query**
 
@@ -452,7 +453,8 @@ Azure shared disks is a feature for Azure managed disks that enables you to atta
 
 **Resources**
 
-- [Azure Shared Disks](https://learn.microsoft.com/azure/virtual-machines/disks-shared-enable?tabs=azure-portal)
+- [Azure Shared Disk Introduction](https://learn.microsoft.com/azure/virtual-machines/disks-shared)
+- [Enable Shared Disks](https://learn.microsoft.com/azure/virtual-machines/disks-shared-enable?tabs=azure-portal)
 
 **Resource Graph Query**
 
@@ -472,7 +474,7 @@ Azure shared disks is a feature for Azure managed disks that enables you to atta
 
 **Guidance**
 
-Recommended changing to "Disable public access and enable private access" and creating a Private Endpoint
+Recommended changing to "Disable public access and enable private access" and creating a Private Endpoint.
 
 **Resources**
 
@@ -513,7 +515,7 @@ It's important to keep your virtual machine (VM) secure for the applications tha
 
 <br><br>
 
-### VM-19 - Enable disk encryption and data at rest encryption by default
+### VM-19 - Enable advanced encryption options for your managed disks
 
 **Category: Access & Security**
 
@@ -521,12 +523,12 @@ It's important to keep your virtual machine (VM) secure for the applications tha
 
 **Guidance**
 
-There are several types of encryption available for your managed disks, including Azure Disk Encryption (ADE), Server-Side Encryption (SSE) and encryption at host.
+Azure Disk Storage Server-Side Encryption (also referred to as encryption-at-rest or Azure Storage encryption) automatically encrypts data stored on Azure managed disks (OS and data disks) when persisting on the Storage Clusters. There are several types of advanced encryption options available for your managed disks, including Azure Disk Encryption (ADE), Encryption at host and Confidential disk encryption.
 
-- Azure Disk Encryption helps protect and safeguard your data to meet your organizational security and compliance commitments.
-- Azure Disk Storage Server-Side Encryption (also referred to as encryption-at-rest or Azure Storage encryption) automatically encrypts data stored on Azure managed disks (OS and data disks) when persisting on the Storage Clusters.
+- ADE encrypts the disks of Azure virtual machines (VMs) inside your VMs by using the DM-Crypt feature of Linux or the BitLocker feature of Windows.
 - Encryption at host ensures that data stored on the VM host hosting your VM is encrypted at rest and flows encrypted to the Storage clusters.
-- Confidential disk encryption binds disk encryption keys to the virtual machine's TPM and makes the protected disk content accessible only to the VM.
+- Confidential disk encryption binds disk encryption keys to the virtual machine’s TPM and makes the protected disk content accessible only to the VM.
+
 
 **Resources**
 
@@ -675,30 +677,6 @@ Azure ultra disks are the highest-performing storage option for Azure virtual ma
 {{< collapse title="Show/Hide Query/Script" >}}
 
 {{< code lang="sql" file="code/vm-24/vm-24.kql" >}} {{< /code >}}
-
-{{< /collapse >}}
-
-<br><br>
-
-### VM-26 - Ensure all VMs part of a SQL Always-on cluster have the same specifications and configurations
-
-**Category: Availability**
-
-**Impact: High**
-
-**Guidance**
-
-All VMs that are members or a SQL Always-on cluster must use the same VM Sku, same number of data disks, same disks Skus, same number of Network Interfaces, same VM Extensions, etc.
-
-**Resources**
-
-- [Prerequisites, restrictions, and recommendations for Always On availability groups](https://learn.microsoft.com/en-us/sql/database-engine/availability-groups/windows/prereqs-restrictions-recommendations-always-on-availability?view=sql-server-ver16)
-
-**Resource Graph Query**
-
-{{< collapse title="Show/Hide Query/Script" >}}
-
-{{< code lang="sql" file="code/vm-26/vm-26.kql" >}} {{< /code >}}
 
 {{< /collapse >}}
 
